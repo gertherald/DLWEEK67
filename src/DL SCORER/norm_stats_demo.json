@@ -1,0 +1,90 @@
+{
+  "defect_probability": {
+    "min": 0.0009,
+    "max": 0.8738125194036153
+  },
+  "cvss_confidence_critical": {
+    "min": 1.5290838681668955e-05,
+    "max": 0.9222170375084319
+  },
+  "cvss_confidence_high": {
+    "min": 2.612135803155796e-05,
+    "max": 0.9161843779162842
+  },
+  "cvss_confidence_medium": {
+    "min": 8.915793326700184e-06,
+    "max": 0.9050636437181447
+  },
+  "cvss_confidence_low": {
+    "min": 1.1610427874795989e-05,
+    "max": 0.9563928037647075
+  },
+  "cvss_confidence_variance": {
+    "min": 0.011535930600135632,
+    "max": 0.40786834122523086
+  },
+  "user_override_accuracy": {
+    "min": 0.22676122435381016,
+    "max": 0.8926264179973643
+  },
+  "user_response_time_seconds": {
+    "min": 0.0013457781755248878,
+    "max": 468.9459776651169
+  },
+  "user_feedback_sentiment": {
+    "min": -0.23994857263856645,
+    "max": 0.2399714533631308
+  },
+  "test_coverage": {
+    "min": 0.0,
+    "max": 0.9844175288071578
+  },
+  "past_defects": {
+    "min": 0.0,
+    "max": 9.0
+  },
+  "static_analysis_warnings": {
+    "min": 0.0,
+    "max": 15.0
+  },
+  "cyclomatic_complexity": {
+    "min": 1.0,
+    "max": 43.0
+  },
+  "diff_lines_added": {
+    "min": 0.0,
+    "max": 382.0
+  },
+  "diff_lines_deleted": {
+    "min": 0.0,
+    "max": 167.0
+  },
+  "new_imports_count": {
+    "min": 0.0,
+    "max": 6.0
+  },
+  "days_to_release_deadline": {
+    "min": 1.0,
+    "max": 89.0
+  },
+  "module_defect_rate_30d": {
+    "min": 0.0,
+    "max": 0.614820564231052
+  },
+  "developer_recent_defect_rate": {
+    "min": 0.0,
+    "max": 0.6913603851088398
+  },
+  "instruction_code_alignment_score": {
+    "min": 0.13727911055630612,
+    "max": 0.9991896619185898
+  },
+  "session_codex_call_count": {
+    "min": 1.0,
+    "max": 11.0
+  },
+  "consecutive_blocked_commits": {
+    "min": 0.0,
+    "max": 5.0
+  }
+}

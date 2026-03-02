@@ -111,10 +111,17 @@ SIGNAL_PATTERNS = {
         r'if.*admin.*==.*True', r'bypass', r'skip.*auth',
         r'token\s*==\s*None', r'no_auth', r'@login_required.*#.*skip',
     ],
-    # Info exposure
+    # Info exposure — includes hardcoded credentials and debug leaks
     'cwe_has_info_exposure': [
         r'print\(.*password', r'log\(.*secret', r'console\.log.*token',
         r'traceback\.print', r'debug\s*=\s*True', r'SHOW ERRORS',
+        # Hardcoded credentials assigned as module-level constants
+        r'(?i)\bAPI_KEY\s*=\s*["\']',           # API_KEY = "..."
+        r'(?i)\b[A-Z_]*PASSWORD\s*=\s*["\']',   # DB_PASSWORD = "..." / PASSWORD = "..."
+        r'(?i)\b[A-Z_]*SECRET\s*=\s*["\']',     # SECRET_KEY = "..." / APP_SECRET = "..."
+        # Debug prints that leak internal query or execution details
+        r'print\s*\(.*\[debug\]',
+        r'print\s*\(.*(?:Running|Executing).*(?:query|sql|INSERT|SELECT|UPDATE)',
     ],
 }
 

@@ -56,13 +56,16 @@ _RISK_BANDS = [
 def _load_model(
     model_path: str = MODEL_PATH,
     stats_path: str = STATS_PATH,
+    sklearn_model_path: str = None,
+    sklearn_stats_path: str = None,
 ) -> tuple:
     """
     Load model + normalisation stats.  Returns (model, stats, backend).
 
     Priority:
       1. PyTorch WideDeepScorer (dl_scorer.pt)       → backend="torch"
-      2. sklearn MLPClassifier  (dl_scorer_sklearn.pkl) → backend="sklearn"
+      2. sklearn override path  (sklearn_model_path) → backend="sklearn"
+      3. sklearn default path   (dl_scorer_sklearn.pkl) → backend="sklearn"
     """
     # ── Try PyTorch model ─────────────────────────────────────────────────────
     if _TORCH_AVAILABLE and os.path.exists(model_path):
@@ -76,13 +79,15 @@ def _load_model(
                 stats = json.load(f)
         return model, stats, "torch"
 
-    # ── Try sklearn fallback ──────────────────────────────────────────────────
-    if os.path.exists(SKLEARN_MODEL_PATH):
+    # ── Try sklearn model (override path first, then default) ─────────────────
+    _sk_model = sklearn_model_path or SKLEARN_MODEL_PATH
+    _sk_stats = sklearn_stats_path or SKLEARN_STATS_PATH
+    if os.path.exists(_sk_model):
         import joblib
-        model = joblib.load(SKLEARN_MODEL_PATH)
+        model = joblib.load(_sk_model)
         stats = {}
-        if os.path.exists(SKLEARN_STATS_PATH):
-            with open(SKLEARN_STATS_PATH) as f:
+        if os.path.exists(_sk_stats):
+            with open(_sk_stats) as f:
                 stats = json.load(f)
         return model, stats, "sklearn"
 
@@ -150,15 +155,17 @@ def _top_factors(features: dict, top_n: int = 5) -> list[dict]:
 # ── Main scoring function ─────────────────────────────────────────────────────
 
 def score_commit(
-    cve_output:    dict,
-    defect_output: dict,
-    user_signals:  dict | None = None,
-    code_context:  dict | None = None,
-    enterprise:    dict | None = None,
-    instruction:   dict | None = None,
-    model_path:    str         = MODEL_PATH,
-    stats_path:    str         = STATS_PATH,
-    verbose:       bool        = True,
+    cve_output:          dict,
+    defect_output:       dict,
+    user_signals:        dict | None = None,
+    code_context:        dict | None = None,
+    enterprise:          dict | None = None,
+    instruction:         dict | None = None,
+    model_path:          str         = MODEL_PATH,
+    stats_path:          str         = STATS_PATH,
+    sklearn_model_path:  str | None  = None,
+    sklearn_stats_path:  str | None  = None,
+    verbose:             bool        = True,
 ) -> dict:
     """
     Full scoring pipeline: raw signals → feature vector → DL model → result.
@@ -185,7 +192,9 @@ def score_commit(
       top_factors     — list of dicts (feature, value, importance, direction)
       features        — full 50-feature dict before normalisation
     """
-    model, stats, backend = _load_model(model_path, stats_path)
+    model, stats, backend = _load_model(
+        model_path, stats_path, sklearn_model_path, sklearn_stats_path
+    )
 
     # Build raw feature vector
     features = build_feature_vector(

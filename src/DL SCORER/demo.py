@@ -44,14 +44,19 @@ _cve_bundle    = joblib.load(os.path.join(CVE_ML_DIR, "severity_model.pkl"))
 _cve_input_cols = joblib.load(os.path.join(CVE_ML_DIR, "input_cols.pkl"))
 _cwe_db        = json.load(open(os.path.join(DATA_DIR, "cwe_descriptions_extended1.json")))
 
-# ── Detect which model checkpoint is loaded ───────────────────────────────────
+# ── Demo model paths (dedicated model built by build_demo_model.py) ───────────
+DEMO_MODEL_PATH = os.path.join(SCRIPT_DIR, "dl_scorer_demo.pkl")
+DEMO_STATS_PATH = os.path.join(SCRIPT_DIR, "norm_stats_demo.json")
+
 def _model_label() -> str:
-    """Return human-readable label for the currently saved DL Scorer model."""
+    """Return human-readable label for the model that will be used."""
+    if os.path.exists(DEMO_MODEL_PATH):
+        return "Demo Model  (After-R4 + verified anchors)"
     state_path = os.path.join(SCRIPT_DIR, "retrain_state.json")
     try:
         with open(state_path) as f:
             state = json.load(f)
-        n = len(state.get("history", []))
+        n     = len(state.get("history", []))
         total = state.get("total_reviews", 0)
         if n >= 4:
             return f"After-R4  ({total} real reviews)"
@@ -69,11 +74,13 @@ BG_CARD    = "#2a2a3e"
 BG_HEADER  = "#0f0f1a"
 TEXT       = "#e2e8f0"
 TEXT_DIM   = "#94a3b8"
-GREEN      = "#22c55e"
-YELLOW     = "#f59e0b"
-YELLOW_TEXT = "#1a1a2e"   # dark text for yellow backgrounds (white-on-yellow is unreadable)
-RED        = "#ef4444"
+# Muted button colors — dark enough for white text to remain readable
+GREEN      = "#16a34a"   # darker green  (was #22c55e — too bright)
+YELLOW     = "#b45309"   # dark amber    (was #f59e0b — too bright / unreadable with white)
+RED        = "#b91c1c"   # darker red    (was #ef4444 — too bright)
 BORDER     = "#3f3f5a"
+# All buttons now use white text (dark bg throughout)
+YELLOW_TEXT = "white"    # dark amber bg is dark enough for white text
 
 FONT_MAIN  = ("Helvetica", 11)
 FONT_MONO  = ("Courier", 10)
@@ -312,13 +319,19 @@ def _run_pipeline(case_key: str) -> dict:
         },
     }
 
+    # Use the dedicated demo model if it exists, else fall back to After-R4 sklearn model
+    _sk_model = DEMO_MODEL_PATH if os.path.exists(DEMO_MODEL_PATH) else None
+    _sk_stats = DEMO_STATS_PATH if os.path.exists(DEMO_STATS_PATH) else None
+
     result = score_commit(
-        cve_output    = cve_output,
-        defect_output = defect_output,
-        code_context  = code_context,
-        instruction   = instruction,
-        user_signals  = {"shadow_twin_passed": -1},
-        verbose       = False,
+        cve_output          = cve_output,
+        defect_output       = defect_output,
+        code_context        = code_context,
+        instruction         = instruction,
+        user_signals        = {"shadow_twin_passed": -1},
+        sklearn_model_path  = _sk_model,
+        sklearn_stats_path  = _sk_stats,
+        verbose             = False,
     )
     result["_cve_output"]    = cve_output
     result["_cve_result"]    = cve_result
