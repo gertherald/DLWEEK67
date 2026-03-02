@@ -537,6 +537,99 @@ def _open_shadow_popup(parent, cve_sig: dict, smells: list, expected: str) -> No
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# FEEDBACK POPUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _open_feedback_popup(parent, result: dict) -> None:
+    """Reviewer feedback: choose actual severity + reason; logs via review_logger."""
+    system_decision = result.get("decision", "BLOCK")
+
+    win = tk.Toplevel(parent)
+    win.title("Submit Reviewer Feedback")
+    win.geometry("480x380")
+    win.resizable(False, False)
+    win.configure(bg=BG_DARK)
+    win.grab_set()
+
+    # Header
+    hdr = tk.Frame(win, bg=BG_HEADER, pady=12)
+    hdr.pack(fill="x")
+    tk.Label(hdr, text="Submit Reviewer Feedback",
+             font=FONT_TITLE, bg=BG_HEADER, fg=TEXT).pack()
+    tk.Label(hdr, text=f"System decision: {_decision_label(system_decision)}",
+             font=FONT_SM, bg=BG_HEADER, fg=TEXT_DIM).pack()
+
+    # Body card
+    card = tk.Frame(win, bg=BG_CARD, padx=20, pady=16)
+    card.pack(fill="both", expand=True, padx=12, pady=10)
+
+    # Assessment radio buttons
+    tk.Label(card, text="Your actual assessment:", font=FONT_BOLD,
+             bg=BG_CARD, fg=TEXT, anchor="w").pack(fill="x", pady=(0, 6))
+
+    assessment_var = tk.StringVar(value=system_decision)
+
+    radio_frame = tk.Frame(card, bg=BG_CARD)
+    radio_frame.pack(fill="x", pady=(0, 12))
+    for val, label, color in [
+        ("APPROVE",         "APPROVE", GREEN),
+        ("FLAG_FOR_REVIEW", "FLAG",    YELLOW),
+        ("BLOCK",           "BLOCK",   RED),
+    ]:
+        tk.Radiobutton(
+            radio_frame, text=label, variable=assessment_var, value=val,
+            font=FONT_BOLD, bg=BG_CARD, fg=color,
+            selectcolor=BG_DARK, activebackground=BG_CARD,
+            activeforeground=color, relief="flat",
+        ).pack(side="left", padx=(0, 24))
+
+    # Reason text area
+    tk.Label(card, text="Reason for feedback:", font=FONT_BOLD,
+             bg=BG_CARD, fg=TEXT, anchor="w").pack(fill="x", pady=(0, 4))
+
+    reason_box = tk.Text(card, font=FONT_MAIN, bg=BG_DARK, fg=TEXT,
+                         insertbackground=TEXT, relief="flat",
+                         height=5, padx=8, pady=6, wrap="word")
+    reason_box.pack(fill="x", pady=(0, 10))
+
+    # Confirmation / error label
+    status_lbl = tk.Label(card, text="", font=FONT_SM, bg=BG_CARD, fg=TEXT_DIM)
+    status_lbl.pack(fill="x")
+
+    # Buttons
+    btn_row = tk.Frame(card, bg=BG_CARD)
+    btn_row.pack(anchor="w", pady=(6, 0))
+
+    def _submit():
+        human_dec = assessment_var.get()
+        try:
+            from review_logger import log_review
+            log_res = log_review(
+                cve_output    = result["_cve_output"],
+                defect_output = result["_defect_result"],
+                human_decision= human_dec,
+            )
+            total   = log_res.get("total_reviews", "?")
+            retrain = log_res.get("retrain_triggered", False)
+            msg = f"Logged review #{total}."
+            if retrain:
+                acc = log_res.get("new_accuracy", 0)
+                msg += f"  Retrain triggered — val accuracy: {acc:.1%}"
+            status_lbl.config(text=msg, fg=GREEN)
+            submit_btn.config(state="disabled")
+        except Exception as exc:
+            status_lbl.config(text=f"Error: {exc}", fg=RED)
+
+    tk.Button(btn_row, text="Cancel", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
+              relief="flat", padx=16, pady=8,
+              command=win.destroy).pack(side="left", padx=(0, 12))
+    submit_btn = tk.Button(btn_row, text="Submit Feedback", font=FONT_BOLD,
+                           bg=YELLOW, fg=BTN_FG, relief="flat", padx=16, pady=8,
+                           command=_submit)
+    submit_btn.pack(side="left")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # DECISION POPUP
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -686,6 +779,9 @@ def _open_decision_popup(root_win, result: dict) -> None:
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
         tk.Button(btn_row, text="Continue", font=FONT_BOLD, bg=GREEN, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_continue).pack(side="left")
+        tk.Button(btn_row, text="Feedback", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
+                  relief="flat", padx=16, pady=8,
+                  command=lambda: _open_feedback_popup(win, result)).pack(side="left", padx=(12, 0))
 
     elif decision in ("FLAG_FOR_REVIEW", "FLAG"):
         tk.Label(af, text="⚠  Flagged — review the issues manually before continuing.",
@@ -697,6 +793,9 @@ def _open_decision_popup(root_win, result: dict) -> None:
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
         tk.Button(btn_row, text="Continue with Warning", font=FONT_BOLD, bg=YELLOW, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_continue).pack(side="left")
+        tk.Button(btn_row, text="Feedback", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
+                  relief="flat", padx=16, pady=8,
+                  command=lambda: _open_feedback_popup(win, result)).pack(side="left", padx=(12, 0))
 
     else:  # BLOCK
         tk.Label(af, text="❌  This commit is BLOCKED. Type CONFIRM to override:",
@@ -731,6 +830,9 @@ def _open_decision_popup(root_win, result: dict) -> None:
         tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
         override_btn.pack(in_=btn_row, side="left")
+        tk.Button(btn_row, text="Feedback", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
+                  relief="flat", padx=16, pady=8,
+                  command=lambda: _open_feedback_popup(win, result)).pack(side="left", padx=(12, 0))
 
     # bottom padding
     tk.Frame(body, bg=BG_CARD, height=16).pack()
