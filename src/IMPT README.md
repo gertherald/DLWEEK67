@@ -567,55 +567,89 @@ The validation set is always the **most recent 20%** of real reviews (chronologi
 
 ### Setup
 
-The demo runs 90 total code reviews across 4 learning rounds (20 cases each) plus a 10-case validation set. All cases are tic-tac-toe game implementations with varying security profiles — a controlled domain that lets the system develop deep pattern recognition before generalising.
+The demo runs 90 total code reviews structured as 4 sequential training rounds (20 unique cases each) plus a 10-case held-out validation set. All 90 prompts are distinct tic-tac-toe implementations — the model never sees the same prompt twice.
 
 **Case distribution across 90 reviews:**
 - **APPROVE** (30 cases, 33%) — clean implementations: pure CLI game, minimax AI, typed validation
 - **FLAG** (36 cases, 40%) — network-exposed code with review-worthy risk: Flask web app, SQLite leaderboard, WebSocket multiplayer
 - **BLOCK** (24 cases, 27%) — critical vulnerabilities: XSS injection, SQL injection, `eval()` execution, path traversal
 
-### Accuracy Progression
+### Training Flow
 
-| Stage | R1 Cases | R2 Cases | R3 Cases | R4 Cases | VAL Cases | **Overall** |
-|-------|----------|----------|----------|----------|-----------|-------------|
-| Bootstrap (synthetic only) | 25% | 35% | 35% | 35% | 30% | **32%** |
-| After Round 1 retrain | 85% | 55% | 65% | 60% | 60% | **66%** |
-| After Round 2 retrain | 90% | 75% | 75% | 80% | 80% | **80%** |
-| After Round 3 retrain | 90% | 85% | 95% | 65% | 80% | **83%** |
-| After Round 4 retrain | 90% | 90% | 95% | 85% | 80% | **89%** |
+The demo simulates a real deployment: the model is never re-evaluated on data it was trained on. Each batch of 20 cases is scored **once**, by the model version that has not yet seen any of those prompts.
+
+```
+Bootstrap model  (5,000 synthetic only)
+        │
+        ▼  score Round 1 — 20 brand-new prompts  →  25% accuracy
+        │  log reviews → retrain
+        ▼
+Checkpoint 1  (synthetic + R1 × 5)
+        │
+        ▼  score Round 2 — 20 brand-new prompts  →  55% accuracy
+        │  log reviews → retrain
+        ▼
+Checkpoint 2  (synthetic + R1 + R2 × 5)
+        │
+        ▼  score Round 3 — 20 brand-new prompts  →  75% accuracy
+        │  log reviews → retrain
+        ▼
+Checkpoint 3  (synthetic + R1 + R2 + R3 × 5)
+        │
+        ▼  score Round 4 — 20 brand-new prompts  →  65% accuracy
+        │  log reviews → retrain
+        ▼
+Checkpoint 4  (synthetic + R1 + R2 + R3 + R4 × 5)
+        │
+        ▼  score Validation — 10 held-out prompts (never in any training set)
+                                                  →  80% accuracy
+```
+
+### Accuracy Results (Sequential — No Data Leakage)
+
+Each row shows the model's accuracy on cases it had **never trained on** at the time of scoring:
+
+| Model at Time of Scoring | Cases Scored | N | Correct | Accuracy |
+|--------------------------|--------------|---|---------|----------|
+| Bootstrap (synthetic only) | Round 1 — first 20 unseen prompts | 20 | 5 | **25%** |
+| After Round 1 retrain | Round 2 — next 20 unseen prompts | 20 | 11 | **55%** |
+| After Round 2 retrain | Round 3 — next 20 unseen prompts | 20 | 15 | **75%** |
+| After Round 3 retrain | Round 4 — next 20 unseen prompts | 20 | 13 | **65%** |
+| After Round 4 retrain | **Validation — 10 held-out prompts** | 10 | 8 | **80%** |
+
+Overall accuracy across the 4 training rounds (fresh evaluation only): **44 / 80 = 55%**
+Final held-out validation accuracy: **8 / 10 = 80%**
 
 ### Analysis
 
-**Bootstrap performance (32%)** is slightly below chance for a 3-class problem, which is expected: the synthetic data is generated from a risk accumulation formula that reflects domain intuition, but the tic-tac-toe domain has specific CWE patterns the synthetic distribution cannot anticipate. The model starts with calibrated beliefs but poor domain specificity.
+**Bootstrap performance (25%)** is at chance level for a 3-class problem. The model starts with only 5,000 synthetic rows that encode domain-intuition labelling rules, but the tic-tac-toe domain has specific CWE signal patterns the synthetic distribution cannot anticipate. It defaults conservatively and misses most real vulnerabilities.
 
-**After Round 1 (+34 percentage points)** the most dramatic jump occurs. Twenty real tic-tac-toe reviews — each with shadow twin results and accurate CWE signals — immediately override the synthetic prior. The model learns the specific patterns that distinguish APPROVE/FLAG/BLOCK in this domain. R1 cases reach 85% accuracy on the very first retrain because those cases contributed to training.
+**After Round 1 → Round 2 (25% → 55%, +30pp)** the largest single jump. Twenty real tic-tac-toe reviews — each with shadow twin pass/fail results and accurate CWE flags — immediately override the synthetic prior. The model now recognises the core APPROVE/FLAG/BLOCK patterns in this domain. R2 cases were never seen at R1 training, so this 55% reflects genuine transfer.
 
-**After Round 2 (+14pp)** the model generalises. R2 cases (never seen at R1 training) now score 75%. This confirms the model is learning transferable patterns, not just memorising R1 case-specific features.
+**After Round 2 → Round 3 (55% → 75%, +20pp)** continued generalisation. The model has now accumulated 40 real reviews covering a broader range of vulnerability types (deserialization, template injection, format strings). R3 cases are entirely new and the 75% correct rate confirms the model is building transferable representations, not memorising specific prompts.
 
-**After Rounds 3–4 (plateau at 89%)** the model stabilises. R3 cases reach 95% accuracy — the highest per-round figure — as the model accumulates enough diversity to cover all BLOCK vulnerability types. The 11% residual error (10/90 cases) is primarily in edge cases where multiple risk signals conflict or where the FLAG/BLOCK boundary is genuinely ambiguous.
+**After Round 3 → Round 4 (75% → 65%, −10pp)** a notable dip. Round 4 intentionally contains harder ambiguous BLOCK cases — subprocess logging, XML/lxml serialization, CSV export — where the vulnerability is indirect and the CWE signal is weaker. The model correctly identifies most but struggles on cases where `shadow_twin_passed = 1` (ttt-baseline, no direct exploit confirmed) even though the underlying pattern is risky. This is the honest cost of generalization: the model does not overfit to R1–R3 patterns.
 
-**Validation set (80%)** demonstrates generalisation to held-out cases never seen during any retrain. The 9-point gap between training and validation accuracy is healthy, indicating the model is not significantly overfitting to the 4-round demo cases.
+**After Round 4 → Validation (65% → 80%)** the final model recovers on the held-out set. The 10 validation prompts include representative cases from each class and the 80% accuracy is the only completely clean measure — these 10 cases appear in no training batch at any stage. The 5-point improvement over R4 scoring reflects that the final retrain (with all 80 reviews) produces a better-calibrated model than the checkpoint used to score R4.
 
 ### Shadow Twin as Learning Signal
 
-The shadow twin's independent pass/fail result (`shadow_twin_passed`) is one of the most informative features for post-R1 retraining:
-
 | Shadow Result | Cases | Meaning |
 |--------------|-------|---------|
-| `1` — PASS (ttt-baseline) | 67 | No security signals detected; clean code confirmed |
-| `0` — FAIL (no-auth + no-validation) | 23 | Security signals present; actual test failures confirmed exploitability |
+| `1` — PASS (ttt-baseline) | 67 | No security signals; secure baseline server passes all 17 assertions |
+| `0` — FAIL (no-auth + no-validation) | 23 | Security signals detected; both vulnerable servers fail the test suite |
 
-Cases where `shadow_twin_passed = 0` carry strong evidence that the BLOCK label is correct — the security control genuinely failed under test. This makes shadow-fail cases disproportionately valuable for retraining, as they provide ground truth beyond static pattern matching.
+`shadow_twin_passed = 0` is the strongest per-case training signal: it means a real Express server with auth or validation removed actually failed automated security tests against that code's patterns. Every retrain sees these cases weighted ×5, making shadow-fail evidence count disproportionately toward shaping the BLOCK boundary.
 
 ### Key Findings
 
-1. **Static analysis alone is insufficient**: Bootstrap accuracy of 32% with only CVE/Defect ML features confirms that static signal extraction requires live context (shadow twin, human override, enterprise governance) to achieve governance-grade accuracy.
+1. **Sequential evaluation gives honest numbers**: The correct measure of learning is accuracy on unseen batches (25% → 55% → 75% → 65% → 80%), not re-scoring already-trained-on cases with a later model. The latter inflates reported accuracy and defeats the purpose of measuring generalization.
 
-2. **Four rounds of 20 cases is sufficient for domain convergence**: the 89% accuracy ceiling is reached with just 80 training reviews — a practical validation that the continual learning system is data-efficient.
+2. **80% held-out validation is the true ceiling**: With 80 real training reviews and 5,000 synthetic baseline rows, the model achieves 80% on completely unseen prompts. The residual 20% error is concentrated in indirect/ambiguous BLOCK cases where static CWE signals are weak and shadow twin cannot distinguish (ttt-baseline passes for path-traversal, subprocess, and CSV cases).
 
-3. **Shadow twin independence matters**: the decision NOT to gate shadow scenarios on the DL Scorer decision (or on any single CWE attribute) ensures the shadow twin provides genuinely orthogonal signal. When both agree (DL=BLOCK, shadow=fail), confidence in the block decision is highest. When they disagree, it surfaces ambiguous or borderline cases for human review.
+3. **Shadow twin provides ground truth beyond static analysis**: The +30pp jump at R1→R2 is primarily driven by `shadow_twin_passed` replacing synthetic zero-values with real 0/1 labels. Static analysis alone (CWE flags, defect probability) is insufficient — the live execution probe turns ambiguous pattern matches into confident training labels.
 
-4. **Tier-2 features drive post-R1 gains**: the jump from 32% to 66% after R1 is largely driven by `shadow_twin_passed` and accurate CWE flags from real cases replacing the zero-valued synthetic Tier-2 features. This validates the architecture decision to keep Tier-2 features as first-class inputs rather than post-processing corrections.
+4. **Four rounds of 20 diverse prompts is a practical minimum**: Domain convergence is visible by R3 (75%) and the final validation is stable at 80%. A fifth round of 20 more diverse cases would likely push validation accuracy to ~85%, but with diminishing returns beyond that given the 3-class boundary ambiguity.
 
 ---
 
