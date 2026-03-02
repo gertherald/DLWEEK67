@@ -44,6 +44,25 @@ _cve_bundle    = joblib.load(os.path.join(CVE_ML_DIR, "severity_model.pkl"))
 _cve_input_cols = joblib.load(os.path.join(CVE_ML_DIR, "input_cols.pkl"))
 _cwe_db        = json.load(open(os.path.join(DATA_DIR, "cwe_descriptions_extended1.json")))
 
+# ── Detect which model checkpoint is loaded ───────────────────────────────────
+def _model_label() -> str:
+    """Return human-readable label for the currently saved DL Scorer model."""
+    state_path = os.path.join(SCRIPT_DIR, "retrain_state.json")
+    try:
+        with open(state_path) as f:
+            state = json.load(f)
+        n = len(state.get("history", []))
+        total = state.get("total_reviews", 0)
+        if n >= 4:
+            return f"After-R4  ({total} real reviews)"
+        if n > 0:
+            return f"After-R{n}  ({total} real reviews)"
+        return "Bootstrap  (synthetic only)"
+    except (FileNotFoundError, KeyError, json.JSONDecodeError):
+        return "sklearn (checkpoint unknown)"
+
+_MODEL_LABEL = _model_label()
+
 # ── Color / font constants ─────────────────────────────────────────────────────
 BG_DARK    = "#1e1e2e"
 BG_CARD    = "#2a2a3e"
@@ -52,6 +71,7 @@ TEXT       = "#e2e8f0"
 TEXT_DIM   = "#94a3b8"
 GREEN      = "#22c55e"
 YELLOW     = "#f59e0b"
+YELLOW_TEXT = "#1a1a2e"   # dark text for yellow backgrounds (white-on-yellow is unreadable)
 RED        = "#ef4444"
 BORDER     = "#3f3f5a"
 
@@ -520,13 +540,14 @@ def _open_decision_popup(root_win, result: dict) -> None:
     risk_int = int(round(risk))
     band_short = "LOW" if "LOW" in band.upper() else ("MED" if "MEDIUM" in band.upper() else "HIGH")
 
+    hdr_fg = YELLOW_TEXT if dec_color == YELLOW else "white"
     left_lbl = tk.Label(hdr, text=f"{icon}  {dec_label}",
-                        font=("Helvetica", 16, "bold"), bg=dec_color, fg="white")
+                        font=("Helvetica", 16, "bold"), bg=dec_color, fg=hdr_fg)
     left_lbl.pack(side="left")
     right_lbl = tk.Label(hdr, text=f"Risk: {risk_int}/100   🔴 {band_short}" if band_color == RED
                          else (f"Risk: {risk_int}/100   🟡 {band_short}" if band_color == YELLOW
                                else f"Risk: {risk_int}/100   🟢 {band_short}"),
-                         font=FONT_BOLD, bg=dec_color, fg="white")
+                         font=FONT_BOLD, bg=dec_color, fg=hdr_fg)
     right_lbl.pack(side="right", padx=8)
 
     # ── Scrollable body ───────────────────────────────────────────────────────
@@ -551,13 +572,12 @@ def _open_decision_popup(root_win, result: dict) -> None:
     conf_dec = max(probs, key=probs.get) if probs else decision
     conf_val = probs.get(conf_dec, 0.0)
     def_prob = result["_defect_result"].get("defect_probability", 0.0)
-    backend  = result.get("backend", "sklearn")
 
     pairs = [
         ("CVE Severity:", cve_sev),
         ("Confidence:", f"{_decision_label(conf_dec)} {conf_val:.0%}"),
         ("Defect Prob:", f"{def_prob:.2f}"),
-        ("Backend:", backend),
+        ("DL Model:", _MODEL_LABEL),
     ]
     for i, (lbl, val) in enumerate(pairs):
         col = tk.Frame(meta, bg=BG_CARD)
@@ -565,10 +585,29 @@ def _open_decision_popup(root_win, result: dict) -> None:
         tk.Label(col, text=lbl, font=FONT_SM, bg=BG_CARD, fg=TEXT_DIM).pack(anchor="w")
         tk.Label(col, text=val, font=FONT_BOLD, bg=BG_CARD, fg=TEXT).pack(anchor="w")
 
-    # ── CWE Violation cards ───────────────────────────────────────────────────
+    # ── CWE Violation cards (only for FLAG / BLOCK) ───────────────────────────
     cwe_flags = [k for k, v in cve_sig.items() if k.startswith("cwe_has_") and v == 1]
 
-    if cwe_flags:
+    if decision == "APPROVE":
+        # Clean safe summary — no CVE warnings needed
+        sf = _section("── Security Assessment ──")
+        safe_card = tk.Frame(sf, bg=BG_DARK, padx=14, pady=14)
+        safe_card.pack(fill="x", pady=4)
+        tk.Label(safe_card, text="✅  No security violations detected.",
+                 font=FONT_BOLD, bg=BG_DARK, fg=GREEN, anchor="w").pack(fill="x", pady=(0, 8))
+        for lbl, val in [
+            ("CVE Severity:", cve_sev),
+            ("Decision Confidence:", f"{_decision_label(conf_dec)} — {conf_val:.0%}"),
+            ("Defect Probability:", f"{def_prob:.2f}  (threshold 0.30)"),
+        ]:
+            row = tk.Frame(safe_card, bg=BG_DARK)
+            row.pack(fill="x", pady=2)
+            tk.Label(row, text=lbl, font=FONT_SM, bg=BG_DARK, fg=TEXT_DIM,
+                     width=22, anchor="w").pack(side="left")
+            tk.Label(row, text=val, font=FONT_BOLD, bg=BG_DARK,
+                     fg=TEXT, anchor="w").pack(side="left")
+
+    elif cwe_flags:
         vf = _section("── Violations Detected ──")
         for flag in cwe_flags:
             info = _cwe_db.get(flag, {})
@@ -639,7 +678,7 @@ def _open_decision_popup(root_win, result: dict) -> None:
         btn_row.pack(anchor="w", pady=8)
         tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=TEXT,
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
-        tk.Button(btn_row, text="Continue with Warning", font=FONT_BOLD, bg=YELLOW, fg="white",
+        tk.Button(btn_row, text="Continue with Warning", font=FONT_BOLD, bg=YELLOW, fg=YELLOW_TEXT,
                   relief="flat", padx=16, pady=8, command=_continue).pack(side="left")
 
     else:  # BLOCK
@@ -691,7 +730,8 @@ def _build_main_window() -> tk.Tk:
     title_bar.pack(fill="x")
     tk.Label(title_bar, text="CODEX GOVERNANCE SYSTEM",
              font=FONT_TITLE, bg=BG_HEADER, fg=TEXT).pack()
-    tk.Label(title_bar, text="Enterprise SDLC Security Scanner — Interactive Demo",
+    tk.Label(title_bar,
+             text=f"Enterprise SDLC Security Scanner — Interactive Demo   |   DL Model: {_MODEL_LABEL}",
              font=FONT_SM, bg=BG_HEADER, fg=TEXT_DIM).pack()
 
     # ── Demo buttons ──────────────────────────────────────────────────────────
@@ -781,13 +821,13 @@ def _build_main_window() -> tk.Tk:
         root.after(120, _poll_result)
 
     DEMO_BTNS = [
-        ("✅  Run APPROVE Demo", "APPROVE", GREEN),
-        ("⚠   Run FLAG Demo",   "FLAG",    YELLOW),
-        ("❌  Run BLOCK Demo",  "BLOCK",   RED),
+        ("✅  Run APPROVE Demo", "APPROVE", GREEN,  "white"),
+        ("⚠   Run FLAG Demo",   "FLAG",    YELLOW, YELLOW_TEXT),
+        ("❌  Run BLOCK Demo",  "BLOCK",   RED,    "white"),
     ]
-    for label, key, color in DEMO_BTNS:
+    for label, key, color, fgcol in DEMO_BTNS:
         b = tk.Button(btns_frame, text=label, font=FONT_BOLD,
-                      bg=color, fg="white", relief="flat",
+                      bg=color, fg=fgcol, relief="flat",
                       padx=18, pady=10,
                       command=lambda k=key: _run_demo(k))
         b.pack(side="left", padx=(0, 12))
