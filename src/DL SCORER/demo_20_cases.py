@@ -3253,10 +3253,11 @@ def move(m: Move, token: str = Depends(oauth)):
     # ── V6: MongoDB tracker (FLAG) ────────────────────────────────────────────
     ("V6", "Persist tic-tac-toe game history and player stats to MongoDB Atlas",
      "FLAG_FOR_REVIEW", """\
+import os
 from pymongo import MongoClient
 from datetime import datetime
 
-_client = MongoClient('mongodb+srv://user:pass@cluster.mongodb.net/')
+_client = MongoClient(os.environ.get('MONGO_URI'))  # should not be hardcoded
 _db     = _client['ttt_atlas']
 _games  = _db['games']
 _scores = _db['scores']
