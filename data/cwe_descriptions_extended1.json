@@ -1,0 +1,345 @@
+{
+  "cwe_has_sql_injection": {
+    "name": "SQL Injection (CWE-89)",
+    "what_it_is": "The code builds a database query using raw user input without sanitising it first.",
+    "what_happens": "An attacker can manipulate the query to read, modify, or delete any data in the database — including passwords, user records, and sensitive business data.",
+    "example": "f\"SELECT * FROM users WHERE name='{user_input}'\"  ← input not sanitised",
+    "fix": "Use parameterised queries or prepared statements. Never concatenate user input directly into SQL strings."
+  },
+  "cwe_has_xss": {
+    "name": "Cross-Site Scripting (CWE-79)",
+    "what_it_is": "User-supplied input is rendered directly into a web page without being escaped.",
+    "what_happens": "An attacker injects malicious JavaScript that runs in other users' browsers — stealing session tokens, redirecting users, or defacing pages.",
+    "example": "innerHTML = userInput  ← unescaped user content inserted into DOM",
+    "fix": "Always escape output before rendering. Use textContent instead of innerHTML, or a templating engine with auto-escaping."
+  },
+  "cwe_has_buffer_overflow": {
+    "name": "Buffer Overflow (CWE-122)",
+    "what_it_is": "The code writes more data into a memory buffer than it was allocated to hold.",
+    "what_happens": "Memory adjacent to the buffer gets overwritten, potentially allowing an attacker to inject and execute arbitrary code or crash the application.",
+    "example": "strcpy(buf, input)  ← no bounds check on input length",
+    "fix": "Use safe functions with explicit size limits (strncpy, snprintf). Validate input length before any memory operation."
+  },
+  "cwe_has_path_traversal": {
+    "name": "Path Traversal (CWE-22)",
+    "what_it_is": "A file path provided by the user is used directly to access files on the server.",
+    "what_happens": "An attacker uses sequences like ../../etc/passwd to escape the intended directory and read sensitive system files.",
+    "example": "open(request.args[\"file\"])  ← file path comes directly from user input",
+    "fix": "Validate and sanitise all file paths. Use os.path.basename() and restrict access to a safe root directory."
+  },
+  "cwe_has_improper_input": {
+    "name": "Improper Input Validation (CWE-20)",
+    "what_it_is": "The code accepts and processes user input without checking whether it is safe or expected.",
+    "what_happens": "Malformed or malicious input can cause unexpected behaviour — crashes, logic bypasses, injection attacks, or data corruption.",
+    "example": "value = request.args[\"id\"]  ← used directly without type check or sanitisation",
+    "fix": "Validate all inputs against expected type, length, format, and range before use. Reject anything that does not conform."
+  },
+  "cwe_has_use_after_free": {
+    "name": "Use After Free (CWE-416)",
+    "what_it_is": "The code continues to use a pointer or reference after the memory it pointed to has been freed.",
+    "what_happens": "The freed memory may have been reallocated elsewhere. An attacker who controls what gets allocated there can hijack program execution.",
+    "example": "free(ptr); ... ptr->value = x;  ← ptr used after being freed",
+    "fix": "Set pointers to NULL immediately after freeing. Use memory-safe languages or smart pointers where possible."
+  },
+  "cwe_has_null_deref": {
+    "name": "Null Dereference (CWE-476)",
+    "what_it_is": "The code tries to use a variable or object that is null or undefined.",
+    "what_happens": "Causes an immediate crash (denial of service). In some contexts, an attacker can trigger this deliberately to take down a service.",
+    "example": "result = db.query(...); result.value  ← result not checked for None first",
+    "fix": "Always check for null/None before accessing properties. Use null-safe operators or guard clauses."
+  },
+  "cwe_has_auth_bypass": {
+    "name": "Authentication Bypass (CWE-287)",
+    "what_it_is": "The authentication logic can be circumvented, allowing access without valid credentials.",
+    "what_happens": "An attacker gains unauthorised access to protected functionality or data — potentially with full admin privileges.",
+    "example": "if token == None: pass  ← missing token treated as valid",
+    "fix": "Enforce authentication on every protected route. Never treat a missing or null token as valid. Use a proven auth library."
+  },
+  "cwe_has_info_exposure": {
+    "name": "Information Exposure (CWE-200)",
+    "what_it_is": "The code leaks sensitive information — passwords, tokens, stack traces, or internal system details — in logs or responses.",
+    "what_happens": "Attackers use exposed information to plan further attacks. Leaked credentials can give direct access to systems.",
+    "example": "print(f\"Login failed for password: {password}\")  ← secret written to logs",
+    "fix": "Never log credentials, tokens, or personal data. Disable debug mode in production. Return generic error messages to users."
+  },
+  "uni_vulnerability": {
+    "name": "Confirmed Security Vulnerability Present",
+    "what_it_is": "The code or one of its dependencies contains a catalogued, formally identified security weakness with a published CVE or advisory.",
+    "what_happens": "A confirmed vulnerability has a known attack path — attackers can look it up by name and exploit it directly without needing to discover it themselves.",
+    "example": "import requests==2.19.1  ← version with a published CVE, not yet updated",
+    "fix": "Run a dependency audit (pip-audit, npm audit, Snyk). Upgrade any flagged dependency to the patched release stated in the advisory."
+  },
+  "uni_issue": {
+    "name": "Reported Security Issue",
+    "what_it_is": "The code contains a reported problem that has been flagged by maintainers or security researchers but may not yet carry a formal CVE or severity score.",
+    "what_happens": "Unclassified issues are routinely underestimated. Without a formal score, teams deprioritise them — but attackers do not wait for a CVE to be assigned before exploiting.",
+    "example": "# TODO: fix edge case with special characters in username input  ← acknowledged but unresolved",
+    "fix": "Treat open security issues with the same urgency as CVEs. Ensure every reported concern has an assigned owner and a fix deadline."
+  },
+  "uni_versions": {
+    "name": "Vulnerability Spans Multiple Versions",
+    "what_it_is": "The vulnerability is not isolated to a single release — it affects multiple versions of a dependency or component used by this code.",
+    "what_happens": "A flaw spanning many versions has existed in the codebase for a long time and is likely embedded in a shared, foundational code path. Rolling back to an older version offers no protection.",
+    "example": "flask==1.0.0  ← within a range where all 1.x versions are confirmed affected",
+    "fix": "Do not assume older versions are safer. Check the full affected version range in the advisory and upgrade past the stated patched version boundary."
+  },
+  "uni_version": {
+    "name": "Specific Vulnerable Version in Use",
+    "what_it_is": "The code uses a dependency pinned to an exact version that falls within a known vulnerability's confirmed affected range.",
+    "what_happens": "An exact version match means the attack is fully reproducible in this environment. Exploit code written for that version will work reliably against this deployment.",
+    "example": "lodash==4.17.15  ← exact version confirmed vulnerable to prototype pollution",
+    "fix": "Upgrade the dependency to the patched version stated in the advisory. Pin the new version in your lockfile and commit the change immediately."
+  },
+  "uni_attacker": {
+    "name": "Direct Exploitation Path Identified",
+    "what_it_is": "The vulnerability has a clearly defined attacker action — the code exposes a weakness that a malicious actor can trigger deliberately and repeatably.",
+    "what_happens": "Vulnerabilities with a named attacker action are not theoretical. There is a documented step-by-step method to exploit them, and that method is likely already in circulation.",
+    "example": "user_id = request.args.get('id')  ← attacker supplies any user ID to access arbitrary records",
+    "fix": "Identify the exact attacker-controlled entry point and enforce strict validation or access control there. Assume exploitation attempts are already occurring against exposed systems."
+  },
+  "uni_been": {
+    "name": "Weakness Publicly Disclosed",
+    "what_it_is": "A known weakness in this code or its dependencies has already been publicly reported, disclosed, or previously exploited.",
+    "what_happens": "Once a vulnerability is disclosed, the window to patch before active exploitation shrinks from weeks to hours. Public disclosure means exploit toolkits are often updated within days.",
+    "example": "# CVE-2021-44228: Log4Shell — has been exploited in the wild since December 2021",
+    "fix": "Confirm whether a patch exists. If it does, apply it immediately. If not, apply all available workarounds listed in the advisory while waiting for an official fix."
+  },
+  "uni_file": {
+    "name": "Unsafe File Operation",
+    "what_it_is": "The code performs file system operations — reading, writing, or referencing files — using input that has not been fully validated or restricted to a safe scope.",
+    "what_happens": "An attacker can manipulate the file path or name to read sensitive system files, overwrite critical data, or place malicious files in unexpected locations on the server.",
+    "example": "with open(request.args['filename']) as f:  ← filename not sanitised or restricted to a safe directory",
+    "fix": "Restrict all file operations to a defined safe root directory. Strip path components with os.path.basename() and validate file extensions before any file access."
+  },
+  "uni_access": {
+    "name": "Insufficient Access Restriction",
+    "what_it_is": "The code does not properly restrict access to a resource, endpoint, or piece of data — allowing users or processes to reach things they should not be permitted to.",
+    "what_happens": "Unauthorised access can expose sensitive records, allow modification of data the caller does not own, or grant elevated functionality to unprivileged users.",
+    "example": "def get_invoice(invoice_id):  ← no check that the invoice belongs to the requesting user",
+    "fix": "Enforce ownership and permission checks on every resource access. Never rely solely on the caller supplying a correct ID — verify server-side that they are authorised for that specific resource."
+  },
+  "uni_user": {
+    "name": "Untrusted User Input Used Directly",
+    "what_it_is": "The code takes input supplied by a user and passes it into a sensitive operation — a query, a file path, a shell command — without validating or sanitising it first.",
+    "what_happens": "Any user — including unauthenticated ones — can supply crafted input to trigger injection attacks, bypass logic checks, or manipulate the system's behaviour in unintended ways.",
+    "example": "query = f\"SELECT * FROM orders WHERE id={request.form['id']}\"  ← raw user value in SQL query",
+    "fix": "Treat all user-supplied input as untrusted. Validate type, format, and range before use. Use parameterised queries, allowlists, and output encoding as appropriate to the context."
+  },
+  "uni_prior": {
+    "name": "Outdated Dependency Below Safe Version Threshold",
+    "what_it_is": "The code uses a version of a library or component that predates the release in which a known vulnerability was patched.",
+    "what_happens": "Running below the patched version means the fix simply does not exist in the code being executed. The vulnerability is fully present and exploitable exactly as described in the advisory.",
+    "example": "Pillow==8.1.0  ← prior to 8.3.2 which patches a remote code execution flaw in image parsing",
+    "fix": "Upgrade to at least the minimum patched version stated in the advisory. Add automated version compliance checks to CI so this cannot regress silently in future."
+  },
+  "uni_affects": {
+    "name": "Component Confirmed Within Vulnerability Scope",
+    "what_it_is": "A library, module, or component used by this code is explicitly named as within the scope of a known vulnerability — not a potential match, a confirmed one.",
+    "what_happens": "Confirmed scope removes all ambiguity. The component in use is the exact target of the vulnerability. There is no question of whether the system is affected.",
+    "example": "from xml.etree import ElementTree  ← confirmed within the affected scope of a known XXE vulnerability",
+    "fix": "Upgrade, replace, or apply the vendor-recommended workaround for the confirmed affected component. Do not continue using it unmitigated once scope is confirmed."
+  },
+  "uni_arbitrary": {
+    "name": "Arbitrary Operation Permitted (CWE-94 / CWE-434)",
+    "what_it_is": "The code allows an attacker to perform unconstrained operations — executing arbitrary code, writing to arbitrary file locations, or running arbitrary system commands.",
+    "what_happens": "Arbitrary execution means the attacker has full control of what the system does next. This is the highest class of severity and typically results in complete compromise of the affected host.",
+    "example": "eval(request.args['expr'])  ← attacker can execute any Python expression on the server",
+    "fix": "Never use eval(), exec(), or dynamic code execution with untrusted input. Replace arbitrary execution with a fixed set of explicitly permitted operations."
+  },
+  "uni_through": {
+    "name": "Exploit Delivered Via Named Entry Point",
+    "what_it_is": "The code exposes a specific endpoint, parameter, or interface through which the vulnerability can be reliably triggered.",
+    "what_happens": "A named entry point means the attack is targeted and repeatable. An attacker can craft a single request or payload to reliably trigger the vulnerability every time.",
+    "example": "app.route('/upload', methods=['POST'])  ← vulnerability exploitable through the file upload endpoint",
+    "fix": "Harden the specific entry point named. Add input validation, rate limiting, and monitoring at that exact location. Remove the entry point entirely if it is not strictly required."
+  },
+  "uni_exploit": {
+    "name": "Working Exploit Exists",
+    "what_it_is": "A functional exploit for a vulnerability affecting this code or its dependencies is known to exist — either published publicly or confirmed as used in real attacks.",
+    "what_happens": "A working exploit removes the technical barrier for attackers. Anyone can use a pre-built exploit to compromise the system, regardless of their own skill level.",
+    "example": "# CVE-2017-5638: Apache Struts — public PoC exploit available and used in the Equifax breach",
+    "fix": "Patch immediately. A published exploit means you are already a target. If patching cannot be done right now, isolate the affected service and apply all available mitigations."
+  },
+  "uni_function": {
+    "name": "Vulnerable Function Identified",
+    "what_it_is": "A specific function in the code contains or calls into a known weakness — either in its own logic or in a library function it delegates to.",
+    "what_happens": "Function-level vulnerabilities are precise and easily exploited. The attacker knows exactly which function to call and with what arguments to trigger the flaw reliably.",
+    "example": "def process_payment(amount):  ← amount not validated; negative values are accepted and processed",
+    "fix": "Audit the flagged function end-to-end. Add input validation, boundary checks, and unit tests that specifically cover edge cases and adversarial inputs for that function."
+  },
+  "uni_code": {
+    "name": "Code Injection Risk (CWE-94)",
+    "what_it_is": "The code constructs or executes dynamic instructions using input it does not fully control — through eval, template rendering, deserialisation, or similar mechanisms.",
+    "what_happens": "An attacker can inject their own instructions into the execution flow, running anything with the privileges of the application — reading files, opening connections, or spawning processes.",
+    "example": "template.render(user_template)  ← user controls the template string, enabling server-side template injection",
+    "fix": "Never execute user-controlled strings as code. Use sandboxed template engines with auto-escaping, and avoid eval and exec entirely when handling untrusted input."
+  },
+  "uni_attack": {
+    "name": "Known Attack Technique Applicable",
+    "what_it_is": "The code is susceptible to a recognised attack technique — such as CSRF, replay attacks, brute force, or injection — due to a missing or inadequate defence.",
+    "what_happens": "Known techniques have well-documented steps and often automated tooling. The absence of the expected defence means the attack will succeed exactly as described.",
+    "example": "# No CSRF token on state-changing POST endpoint  ← cross-site request forgery possible without it",
+    "fix": "Identify the attack type and apply the standard mitigation: CSRF tokens, nonces, rate limiting, or input validation depending on the specific technique involved."
+  },
+  "uni_manipulation": {
+    "name": "Input or Parameter Manipulation (CWE-472)",
+    "what_it_is": "The code uses a value supplied by the client — such as a price, user ID, or permission level — in a sensitive operation without verifying it server-side.",
+    "what_happens": "An attacker intercepts the request and modifies the parameter to a value of their choosing, bypassing business logic, altering prices, or escalating their own privileges.",
+    "example": "total = float(request.form['price']) * qty  ← price comes from the client, not recalculated server-side",
+    "fix": "Never trust client-supplied values for business-critical fields. Recompute sensitive values from authoritative server-side data on every request."
+  },
+  "uni_affected": {
+    "name": "Confirmed Affected Component in Use",
+    "what_it_is": "A library, plugin, or module used by this code is explicitly confirmed as affected by a published vulnerability — explicitly named in the advisory, not just suspected.",
+    "what_happens": "Confirmed affected status means the vulnerability is reproducible in this environment as-is. There is no uncertainty — the flaw is present and exploitable.",
+    "example": "from flask_jwt_extended import JWTManager  ← installed version confirmed affected by a token forgery CVE",
+    "fix": "Cross-reference the full dependency list against the advisory's affected component list. Every confirmed match must be upgraded or removed before the next deployment."
+  },
+  "uni_authenticated": {
+    "name": "Authentication Precondition Mishandled",
+    "what_it_is": "The code either requires authentication but fails to enforce it consistently, or performs a sensitive action that should require authentication but does not check for it.",
+    "what_happens": "An unauthenticated user can access protected functionality, or a lower-privilege authenticated user can reach functionality reserved for higher roles.",
+    "example": "def admin_delete(user_id):  ← no check that the caller holds an admin role before the delete executes",
+    "fix": "Apply authentication and authorisation checks at the entry point of every protected function. Use a decorator or middleware so checks cannot be accidentally omitted."
+  },
+  "bi_issue_affects": {
+    "name": "Scoped Security Issue in Named Component",
+    "what_it_is": "The code contains a documented security issue that has been formally scoped to a specific component or version range within the system.",
+    "what_happens": "A scoped issue is bounded but confirmed. Attackers can narrow their targeting to the exact component named, making exploitation more efficient and reliable.",
+    "example": "# Security issue affects the XML parser module in versions 1.x — still in active use in this service",
+    "fix": "Verify whether any component matching the stated scope is present in your dependency tree. Upgrade or replace it before the issue is weaponised."
+  },
+  "bi_exploit_been": {
+    "name": "Exploit Has Been Used in Real Attacks",
+    "what_it_is": "A working exploit for a vulnerability affecting this code has already been deployed in real-world attacks — not just published as a proof of concept.",
+    "what_happens": "Active use in attacks means the vulnerability is already in attackers' toolkits. Automated scanners are probing for it across the internet continuously.",
+    "example": "# CVE-2021-26084: Confluence OGNL injection — exploit has been used in ransomware campaigns",
+    "fix": "Patch immediately and review access logs for signs of compromise. If patching cannot happen immediately, take the affected service offline until it can be applied."
+  },
+  "bi_remotely__exploit": {
+    "name": "Remotely Exploitable Without Local Access",
+    "what_it_is": "The vulnerability can be triggered over a network connection — no physical access, authenticated session, or local account is required to exploit it.",
+    "what_happens": "Remote exploitability means the entire internet is a potential attacker pool. Automated scanners identify and probe remotely exploitable vulnerabilities within hours of a CVE being published.",
+    "example": "app.run(host='0.0.0.0')  ← service exposed to the network contains a remotely triggerable parsing flaw",
+    "fix": "Patch the vulnerability and restrict network exposure with firewall rules. Limit access to the service by IP range as an immediate mitigation while the patch is prepared."
+  },
+  "bi_manipulation_argument": {
+    "name": "Function Argument Manipulation (CWE-88)",
+    "what_it_is": "A specific argument passed to a function can be controlled by an attacker to alter the function's behaviour in a harmful and unintended way.",
+    "what_happens": "Argument manipulation is precise and repeatable. The attacker needs to craft only one specific parameter value to trigger the vulnerability — no guesswork is required.",
+    "example": "def get_file(path):  ← path argument is not restricted; ../../../etc/passwd is accepted",
+    "fix": "Validate every function argument against its expected type, format, and range before use. For path arguments enforce a safe root; for numeric arguments enforce strict min and max bounds."
+  },
+  "bi_cross_site_scripting": {
+    "name": "Cross-Site Scripting (CWE-79)",
+    "what_it_is": "The code renders user-supplied content in a browser without escaping it, allowing an attacker to inject arbitrary scripts into the page.",
+    "what_happens": "The injected script executes in the victim's browser — hijacking their session, stealing credentials, logging keystrokes, or silently redirecting them to a malicious site.",
+    "example": "return f\"<p>Welcome, {username}</p>\"  ← username rendered directly without HTML escaping",
+    "fix": "Escape all user-supplied content before rendering it in HTML. Enable auto-escaping in your templating engine and add a Content Security Policy header to limit script execution scope."
+  },
+  "bi_prior_version": {
+    "name": "Dependency Below Patched Version Threshold",
+    "what_it_is": "The code uses a dependency at a version that predates the specific release in which a known vulnerability was fixed.",
+    "what_happens": "The patch does not exist in the version being executed. Every attack that works against the vulnerable version will succeed — the fix has no effect until it is actually applied.",
+    "example": "Werkzeug==1.0.0  ← prior to 2.2.3 which patches a path traversal in the development server",
+    "fix": "Upgrade the dependency to at least the patched version stated in the advisory. Commit the updated lockfile and run the test suite to confirm nothing breaks."
+  },
+  "bi_versions_including": {
+    "name": "Named Version Range Confirmed Affected",
+    "what_it_is": "The vulnerability explicitly covers a list of versions, several of which may be running across different environments or services within the same system.",
+    "what_happens": "If multiple versions of the same dependency are deployed across services, all of them are affected. Patching one environment while leaving others unpatched creates inconsistent and exploitable gaps.",
+    "example": "# Service A: requests==2.20.0, Service B: requests==2.22.0 — both fall within the confirmed affected range",
+    "fix": "Audit all environments, not just the primary one. Ensure every instance of the affected dependency across every service is upgraded to the patched version."
+  },
+  "bi_n_a_through": {
+    "name": "All Versions Affected From First Release",
+    "what_it_is": "The vulnerability exists in every version of the affected component from its initial release through to the patched version — there is no safe older version to fall back to.",
+    "what_happens": "There is no rollback option. Any deployment of this component below the patch threshold is vulnerable, regardless of how old the installed version is.",
+    "example": "pyyaml==3.13  ← all versions from initial release through 5.3 affected by code execution via yaml.load()",
+    "fix": "The only safe action is upgrading past the patched version. Remove all pre-patch version pins from lockfiles and dependency manifests across every environment."
+  },
+  "bi_plugin_wordpress": {
+    "name": "Vulnerable WordPress Plugin Dependency",
+    "what_it_is": "The code relies on a WordPress plugin that contains a known, published security vulnerability.",
+    "what_happens": "WordPress plugins are the most exploited category of web vulnerabilities. Automated scanners probe WordPress sites for outdated plugins continuously, and mass exploitation typically follows within hours of a CVE disclosure.",
+    "example": "# Plugin: contact-form-7 v5.5.6 still active  ← version with a reflected XSS CVE",
+    "fix": "Update all plugins from the WordPress admin dashboard immediately. Deactivate and remove any plugins that are unused or no longer maintained — they remain an attack surface even when inactive."
+  },
+  "bi_wordpress_vulnerable": {
+    "name": "Active WordPress Component Is Vulnerable",
+    "what_it_is": "A WordPress core file, theme, or active plugin on this site is confirmed vulnerable to a published exploit.",
+    "what_happens": "Vulnerable WordPress sites are continuously indexed by exploit scanners. A confirmed vulnerable component can be used to compromise the site, plant malware, or redirect visitors without any visible indication.",
+    "example": "# WordPress 6.0.1 with Elementor 3.6.0 active  ← Elementor version confirmed to have a stored XSS CVE",
+    "fix": "Apply all pending WordPress core and plugin updates immediately. Enable automatic background updates for security releases and add a Web Application Firewall as an additional layer."
+  },
+  "bi_issue_been": {
+    "name": "Security Issue Publicly Disclosed or Patched",
+    "what_it_is": "A security issue in this code or a dependency has already been publicly disclosed — and may or may not yet have a fix available for it.",
+    "what_happens": "Public disclosure starts the exploitation clock. Attackers reverse-engineer patches and release working exploits within days. A disclosed-but-unpatched system is the most exposed state possible.",
+    "example": "# django-debug-toolbar security issue has been disclosed — patch not yet applied in this environment",
+    "fix": "Determine whether a patch has been released. If yes, apply it immediately. If no patch exists yet, apply all available workarounds stated in the advisory and increase logging and monitoring."
+  },
+  "bi_makes_possible": {
+    "name": "Missing Control Directly Enables Attack",
+    "what_it_is": "The code is missing a single specific control — a check, a token, or a validation — and that absence is the sole reason a particular attack is possible.",
+    "what_happens": "When one missing control enables an entire attack, adding it closes the vulnerability completely. Leaving it missing leaves the attack permanently and trivially available.",
+    "example": "# No nonce check on AJAX handler  ← its absence makes it possible for any user to modify settings",
+    "fix": "Add the specific missing control identified in the finding. Confirm through direct testing that the attack is no longer reproducible after the control is in place."
+  },
+  "bi_access_control": {
+    "name": "Broken Access Control (OWASP A01)",
+    "what_it_is": "The code fails to enforce who is allowed to perform an action or access a resource — permissions are absent, incorrectly implemented, or bypassable by a user with lower privileges.",
+    "what_happens": "Users can reach data or actions they are not authorised for — reading other users' records, performing admin operations, or modifying data they do not own.",
+    "example": "def update_profile(user_id, data):  ← any authenticated user can pass any user_id and modify that profile",
+    "fix": "Enforce server-side authorisation checks on every sensitive action. Use a deny-by-default policy — explicitly grant permissions rather than trying to block specific cases."
+  },
+  "bi_code_execution": {
+    "name": "Remote or Arbitrary Code Execution (CWE-78 / CWE-94)",
+    "what_it_is": "The code can be manipulated into executing attacker-controlled instructions — either by running system commands with unsanitised input or by evaluating untrusted dynamic code.",
+    "what_happens": "The attacker runs code of their own choosing with the privileges of the application — reading the filesystem, exfiltrating data, installing backdoors, or pivoting to other systems on the network.",
+    "example": "os.system(f\"convert {request.args['file']} out.png\")  ← attacker appends shell commands to the filename",
+    "fix": "Never pass user input to system calls, shells, or eval. Use library functions instead of shell commands. If a shell call is unavoidable, use a strict allowlist and explicitly escape all arguments."
+  },
+  "bi_vulnerability_fixed": {
+    "name": "Patch Available But May Not Be Applied",
+    "what_it_is": "A fix has been released for a known vulnerability in a component this code depends on, but the codebase may still be running the unpatched version.",
+    "what_happens": "A public patch accelerates attacker timelines. Exploit authors diff the patched and unpatched binaries to identify the exact flaw, and working exploits are frequently released within 24 to 72 hours of a patch.",
+    "example": "# CVE fixed in requests==2.32.0 — requirements.txt still pins requests==2.28.0",
+    "fix": "Upgrade to the patched version immediately. A released fix is not the end of the risk — it is the start of the exploitation window for every system that has not yet applied it."
+  },
+  "bi_stored_cross_site": {
+    "name": "Stored Cross-Site Scripting (CWE-79 Persistent)",
+    "what_it_is": "The code saves user-supplied content to a database and later renders it in a browser without escaping it, allowing a malicious script to be stored and served persistently.",
+    "what_happens": "Unlike reflected XSS, the injected script runs automatically for every user who views the infected page — without any phishing link required. One successful injection can compromise every user of the application.",
+    "example": "db.save(comment=request.form['comment'])  ...  render(f\"<p>{comment}</p>\")  ← stored and rendered unescaped",
+    "fix": "Sanitise input before storing it and escape output before rendering it — both steps are required. Sanitise on the way in, escape on the way out. Add a Content Security Policy header to limit script scope."
+  },
+  "bi_been_patched": {
+    "name": "Patch Released — System May Still Be Unpatched",
+    "what_it_is": "The vendor has released a fix for a known vulnerability, but if the codebase has not been updated to the patched version, the running system remains fully exposed.",
+    "what_happens": "The existence of a patch confirms the vulnerability is real and documented. Any system still running the pre-patch version is exposed to a fully characterised, preventable risk.",
+    "example": "# PyJWT has been patched in 2.4.0 — installed version in this environment is 2.1.0",
+    "fix": "Upgrade to the patched version. Subscribe to security advisories for your key dependencies so you are notified the moment a patch is released and can apply it without delay."
+  },
+  "bi_versions_prior": {
+    "name": "All Versions Below Threshold Are Vulnerable",
+    "what_it_is": "Every version of a dependency below a stated release threshold is confirmed vulnerable — the flaw spans the entire pre-patch history of the component, not a specific release.",
+    "what_happens": "There is no safe older version to fall back to. Any version in use below the patched release is equally vulnerable. The only path to safety is upgrading past the threshold.",
+    "example": "cryptography==2.8  ← all versions prior to 3.2.1 affected by a key generation weakness",
+    "fix": "Upgrade to at least the minimum patched version stated in the advisory. Verify that no other services in the infrastructure are pinned to older versions of the same library."
+  },
+  "bi_vulnerability_been": {
+    "name": "Vulnerability Entered Public Record",
+    "what_it_is": "A vulnerability affecting this code or a dependency has been publicly reported — through a CVE assignment, a vendor advisory, or a researcher's disclosure.",
+    "what_happens": "Once a vulnerability is in the public record, it is on every attacker's radar. Security researchers and threat actors alike monitor CVE feeds and begin probing for unpatched systems immediately.",
+    "example": "# Spring Framework vulnerability entered public record as CVE-2022-22965 (Spring4Shell)",
+    "fix": "Act on any publicly reported vulnerability affecting your stack without delay. Subscribe to the NVD feed and your dependency managers' security advisories to minimise your response time."
+  },
+  "bi_public_used_": {
+    "name": "Public Exploit Actively Deployed in Attacks",
+    "what_it_is": "A public exploit for a vulnerability in this code or its dependencies is not only available but is being actively used in ongoing real-world attacks.",
+    "what_happens": "Active deployment in attacks means exploitation is automated and at scale. Attackers are scanning the entire internet and exploiting every unpatched instance they encounter — not just targeted systems.",
+    "example": "# Log4Shell (CVE-2021-44228): public exploit actively used in mass scanning campaigns within 24 hours of disclosure",
+    "fix": "Patch immediately and treat the system as potentially already compromised. Rotate all credentials accessible from the affected service and review access logs for indicators of exploitation."
+  }
+}

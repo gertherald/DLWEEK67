@@ -1,0 +1,41 @@
+name: Shadow Twin Safety Check
+
+on:
+  pull_request:
+    branches: [main, production]
+
+jobs:
+  shadow-twin-validation:
+    name: Shadow Twin Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout proposed change
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Seed Shadow Database
+        run: node src/seed.js
+        env:
+          DB_NAME: shadow.sqlite
+
+      - name: Start Shadow Twin Server
+        run: |
+          PORT=3001 DB_NAME=shadow.sqlite node src/app.js &
+          sleep 3
+        env:
+          PORT: 3001
+          DB_NAME: shadow.sqlite
+
+      - name: Run Shadow Twin Tests
+        run: node tests/shadow-tests.js
+        env:
+          PORT: 3001
+          DB_NAME: shadow.sqlite

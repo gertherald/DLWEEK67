@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # ─── Production App ─────────────────────────────────────────────────────────
+  production:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_NAME=production.sqlite
+    volumes:
+      - ./data:/app/data
+    command: sh -c "node src/seed.js && node src/app.js"
+
+  # ─── Shadow Twin ────────────────────────────────────────────────────────────
+  shadow:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DB_NAME=shadow.sqlite
+    volumes:
+      - ./data:/app/data
+    command: sh -c "node src/seed.js && node src/app.js"

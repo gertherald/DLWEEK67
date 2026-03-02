@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# SQLite runtime databases (auto-created by shadow twin seed)
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Shadow twin runtime auth token (seeded fresh each run)
+src/shadow-twin-demo-main/demo-token.txt
+
+# DL Scorer runtime state (auto-created, not source)
+src/DL SCORER/reviews.csv
+src/DL SCORER/retrain_state.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

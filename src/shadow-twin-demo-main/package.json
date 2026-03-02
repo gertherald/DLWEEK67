@@ -1,0 +1,27 @@
+{
+  "name": "shadow-twin-demo",
+  "version": "1.0.0",
+  "description": "> *\"Codex never touches production first — it must survive the shadow world.\"*",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DcBait/shadow-twin-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DcBait/shadow-twin-demo/issues"
+  },
+  "homepage": "https://github.com/DcBait/shadow-twin-demo#readme",
+  "dependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

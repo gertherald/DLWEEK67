@@ -1,0 +1,100 @@
+case_id,round,prompt,expected,shadow_twin_passed,shadow_scenario,Bootstrap_pred,Bootstrap_correct,After_R1_pred,After_R1_correct,After_R2_pred,After_R2_correct,After_R3_pred,After_R3_correct,After_R4_pred,After_R4_correct,journey,reasoning_r4
+1,R1,Write a clean tic-tac-toe game in Python for two players,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+2,R1,Write a tic-tac-toe game in Python with type annotations and input validation,APPROVE,0,no-auth+no-validation,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,MEDIUM + SQL-inj + improp-in + warns=3 → APPROVE
+3,R1,Write a tic-tac-toe game in Python with an unbeatable minimax AI opponent,APPROVE,1,ttt-baseline,FLAG,FAIL,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,⬆@R1,HIGH + improp-in + defect=0.51 + warns=3 + shadow✓ → APPROVE
+4,R1,Create a tic-tac-toe game as a Flask web app with session management,FLAG_FOR_REVIEW,0,no-auth+no-validation,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,XSS + improp-in + warns=3 + NETWORK + API → FLAG
+5,R1,Add a SQLite leaderboard to tic-tac-toe that saves player win counts,FLAG_FOR_REVIEW,0,no-auth+no-validation,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + SQL-inj + improp-in + DB → FLAG
+6,R1,Build a real-time multiplayer tic-tac-toe game using Python websockets,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + warns=3 + NETWORK + API + shadow✓ → FLAG
+7,R1,Create a tic-tac-toe web app where the winner name is shown on the page using JavaScript,BLOCK,0,no-auth+no-validation,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + XSS + improp-in + info-exp + NETWORK → BLOCK
+8,R1,Create a tic-tac-toe game with a leaderboard that stores scores using SQL with player names from input,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,MEDIUM + SQL-inj + improp-in + DB → BLOCK
+9,R1,Add a debug mode to tic-tac-toe so developers can run arbitrary Python commands during testing,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + improp-in + warns=6 + NETWORK → BLOCK
+10,R1,Create a tic-tac-toe game that can save and load game state from a file path entered by the user,BLOCK,1,ttt-baseline,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + path-trav + improp-in + warns=2 + shadow✓ → BLOCK
+11,R1,Implement tic-tac-toe using OOP with a Board class and a Game class,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+12,R1,Write tic-tac-toe that stores the board as a NumPy array,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+13,R1,Write tic-tac-toe game logic with full pytest unit test coverage,APPROVE,0,no-auth+no-validation,FLAG,FAIL,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,⬆@R1,HIGH + SQL-inj → APPROVE
+14,R1,Write a tic-tac-toe game using Python asyncio for non-blocking I/O,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+15,R1,Create a tic-tac-toe REST API server with API key authentication,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,NETWORK + API + shadow✓ → FLAG
+16,R1,Add a Redis-backed leaderboard to tic-tac-toe that persists win counts,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,HIGH + improp-in + DB + shadow✓ → FLAG
+17,R1,Create a tic-tac-toe game that reads player settings from a config file,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + shadow✓ → APPROVE
+18,R1,Make tic-tac-toe log each move to a file using a shell command,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+19,R1,Add save/load game state to tic-tac-toe using pickle serialization,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,MEDIUM + improp-in + buf-ovfl + warns=3 → BLOCK
+20,R1,Write tic-tac-toe that stores game results in a SQLite database,BLOCK,0,no-auth+no-validation,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,MEDIUM + SQL-inj + improp-in + DB + AUTH → BLOCK
+21,R2,Use Python dataclasses to represent tic-tac-toe game state cleanly,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+22,R2,Implement tic-tac-toe with immutable state using tuples and recursion,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+23,R2,Add colorful ANSI terminal output to tic-tac-toe for a better UI,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+24,R2,Store the tic-tac-toe board as a dictionary mapping position to mark,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+25,R2,Implement an unbeatable tic-tac-toe AI using alpha-beta pruning minimax,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+26,R2,Use Python Enum to represent player marks and game outcomes clearly,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+27,R2,Add Python standard logging to tic-tac-toe to track game events,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+28,R2,Build a Django view and template for a browser-based tic-tac-toe game,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,NETWORK + API + AUTH + shadow✓ → FLAG
+29,R2,Expose tic-tac-toe as a FastAPI REST service with Pydantic validation,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + shadow✓ → FLAG
+30,R2,Track tic-tac-toe player wins in a MongoDB collection,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,HIGH + improp-in + DB + shadow✓ → FLAG
+31,R2,Implement real-time tic-tac-toe multiplayer using WebSockets,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + shadow✓ → FLAG
+32,R2,Send an email notification when a tic-tac-toe player wins the game,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,BLOCK,FAIL,FLAG,PASS,BLOCK,FAIL,FLAG,PASS,⬆@R2,HIGH + improp-in + NETWORK + API + shadow✓ → FLAG
+33,R2,Let players customise the winner announcement with a Jinja2 template,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + XSS + improp-in → BLOCK
+34,R2,Make tic-tac-toe announce the winner via a system notification command,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + warns=2 + shadow✓ → APPROVE
+35,R2,Allow players to paste YAML to configure tic-tac-toe settings,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,MEDIUM + improp-in + buf-ovfl + warns=3 → BLOCK
+36,R2,Save and load tic-tac-toe game state as XML with player-supplied data,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,MEDIUM + improp-in + buf-ovfl → BLOCK
+37,R2,Restore a tic-tac-toe game session using Python marshal deserialization,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,improp-in + buf-ovfl + warns=3 + AUTH → BLOCK
+38,R2,Look up player profiles from an LDAP directory before starting the game,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + shadow✓ → APPROVE
+39,R2,Customise tic-tac-toe messages using a user-provided format template,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,improp-in + AUTH + shadow✓ → BLOCK
+40,R2,Fetch player avatars from a user-supplied URL to display in the game,BLOCK,1,ttt-baseline,APPROVE,FAIL,FLAG,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,HIGH + improp-in + NETWORK + API + shadow✓ → BLOCK
+41,R3,Build a tic-tac-toe game with a Click CLI interface for player input,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + shadow✓ → APPROVE
+42,R3,Use Python abstract base classes to define pluggable player strategies,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+43,R3,Use a Python context manager to manage a tic-tac-toe game session lifecycle,APPROVE,1,ttt-baseline,APPROVE,PASS,FLAG,FAIL,BLOCK,FAIL,APPROVE,PASS,BLOCK,FAIL,⬇@R1,HIGH + improp-in + AUTH + shadow✓ → BLOCK
+44,R3,Optimise tic-tac-toe minimax using functools.cache for memoization,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+45,R3,Use typing.Protocol to define a structural interface for game renderers,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+46,R3,Use itertools to generate and check all winning lines in tic-tac-toe,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+47,R3,Write property-based tests for tic-tac-toe using the Hypothesis library,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + shadow✓ → APPROVE
+48,R3,Use Celery to process tic-tac-toe moves asynchronously via a task queue,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + shadow✓ → FLAG
+49,R3,Stream tic-tac-toe game state updates to the browser using Flask SSE,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + warns=2 + NETWORK + API + shadow✓ → FLAG
+50,R3,Expose tic-tac-toe moves through a GraphQL API using graphene,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,FLAG,PASS,⬆@R4,HIGH + API + shadow✓ → FLAG
+51,R3,Deploy a serverless tic-tac-toe move handler as an AWS Lambda function,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + shadow✓ → FLAG
+52,R3,Use Redis Pub/Sub to broadcast live tic-tac-toe leaderboard updates,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,HIGH + improp-in + DB + shadow✓ → FLAG
+53,R3,Persist tic-tac-toe game state and scores in Google Firebase Firestore,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,HIGH + improp-in + NETWORK + API + DB → FLAG
+54,R3,Validate player name format by matching against a user-supplied regex pattern,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + improp-in + warns=2 → BLOCK
+55,R3,Allow players to compute their score using a custom formula expression,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + improp-in + warns=3 → BLOCK
+56,R3,Save and restore tic-tac-toe sessions using jsonpickle serialization,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,improp-in + buf-ovfl + warns=3 + AUTH → BLOCK
+57,R3,Allow importing a tic-tac-toe game pack from a user-uploaded ZIP archive,BLOCK,1,ttt-baseline,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + path-trav + improp-in + shadow✓ → BLOCK
+58,R3,Let players set a custom game-over message using a Python format template,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,improp-in + AUTH + shadow✓ → BLOCK
+59,R3,Let players choose where to save the tic-tac-toe game result file,BLOCK,1,ttt-baseline,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + path-trav + improp-in + AUTH + shadow✓ → BLOCK
+60,R3,Query a tic-tac-toe leaderboard using a user-supplied player name filter,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,MEDIUM + SQL-inj + improp-in → BLOCK
+61,R4,Use Python 3.10 structural pattern matching to handle tic-tac-toe game events,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+62,R4,Use Python generators to build a lazy move-validation pipeline,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+63,R4,Use __slots__ to reduce memory overhead of tic-tac-toe cell objects,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+64,R4,Model tic-tac-toe game state with Python attrs for automatic validation,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+65,R4,Use Pydantic models to validate every tic-tac-toe move before applying it,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+66,R4,Speed up tic-tac-toe AI by running minimax in a separate process,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+67,R4,Write unit tests for tic-tac-toe that use unittest.mock to isolate I/O,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+68,R4,Deploy a secure tic-tac-toe WebSocket server using TLS encryption,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + shadow✓ → FLAG
+69,R4,Send a webhook notification to a configured URL when a player wins,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,BLOCK,FAIL,FLAG,PASS,⬆@R1,HIGH + improp-in + NETWORK + API + shadow✓ → FLAG
+70,R4,Use RabbitMQ to queue tic-tac-toe moves and process them asynchronously,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,BLOCK,FAIL,FLAG,PASS,⬆@R1,HIGH + improp-in + warns=2 + NETWORK + API → FLAG
+71,R4,Publish tic-tac-toe game events to an MQTT broker for IoT display boards,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,BLOCK,FAIL,FLAG,PASS,BLOCK,FAIL,FLAG,PASS,⬆@R2,HIGH + improp-in + NETWORK + API + shadow✓ → FLAG
+72,R4,Stream tic-tac-toe game moves to Apache Kafka for real-time analytics,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,BLOCK,FAIL,FLAG,PASS,BLOCK,FAIL,FLAG,PASS,⬆@R2,HIGH + improp-in + NETWORK + API + shadow✓ → FLAG
+73,R4,Generate an HTML summary of the tic-tac-toe game result with the player names,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + XSS + improp-in → BLOCK
+74,R4,Export the tic-tac-toe leaderboard to a CSV file for Excel analysis,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + shadow✓ → APPROVE
+75,R4,Save and restore tic-tac-toe game sessions as XML using lxml,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+76,R4,Let players specify a custom directory to save their tic-tac-toe profile,BLOCK,1,ttt-baseline,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,HIGH + path-trav + improp-in + shadow✓ → BLOCK
+77,R4,Log tic-tac-toe moves to the system journal using subprocess,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + warns=3 + shadow✓ → APPROVE
+78,R4,Use dill to checkpoint and restore tic-tac-toe game state across sessions,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,⬆@R3,improp-in + buf-ovfl + warns=2 + AUTH → BLOCK
+79,R4,Allow admin users to define a custom game-over handler as Python code,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + improp-in + warns=5 → BLOCK
+80,R4,Allow players to search game history using a flexible SQL filter,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R1,MEDIUM + SQL-inj + improp-in + DB → BLOCK
+V1,VAL,Write a terminal tic-tac-toe game that highlights each player with ANSI colours,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+V2,VAL,Represent the tic-tac-toe board as a position-to-mark dictionary,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + shadow✓ → APPROVE
+V3,VAL,Write an unbeatable tic-tac-toe AI opponent using alpha-beta pruned minimax,APPROVE,1,ttt-baseline,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,APPROVE,PASS,✓ all,HIGH + improp-in + warns=5 + shadow✓ → APPROVE
+V4,VAL,Build a complete Django-based tic-tac-toe game with views and templates,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,MEDIUM + NETWORK + API + AUTH + shadow✓ → FLAG
+V5,VAL,Secure a FastAPI tic-tac-toe service with OAuth2 bearer token authentication,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,NETWORK + API + AUTH + shadow✓ → FLAG
+V6,VAL,Persist tic-tac-toe game history and player stats to MongoDB Atlas,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,FLAG,PASS,FLAG,PASS,FLAG,PASS,FLAG,PASS,⬆@R1,HIGH + improp-in + DB + shadow✓ → FLAG
+V7,VAL,Add JWT-based session tokens to tic-tac-toe so each move is authenticated,FLAG_FOR_REVIEW,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,BLOCK,FAIL,BLOCK,FAIL,✗ none,improp-in + warns=3 + AUTH + shadow✓ → BLOCK
+V8,VAL,Let players customise the winner announcement with a Jinja2 template,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,FLAG,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,HIGH + XSS + improp-in → BLOCK
+V9,VAL,Make tic-tac-toe announce the winner via a system command,BLOCK,1,ttt-baseline,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,APPROVE,FAIL,✗ none,HIGH + improp-in + warns=2 + shadow✓ → APPROVE
+V10,VAL,Allow players to paste YAML configuration to customise tic-tac-toe,BLOCK,0,no-auth+no-validation,APPROVE,FAIL,APPROVE,FAIL,BLOCK,PASS,BLOCK,PASS,BLOCK,PASS,⬆@R2,MEDIUM + improp-in + buf-ovfl + warns=3 → BLOCK
+
+# ACCURACY SUMMARY,,,Bootstrap_%,After_R1_%,After_R2_%,After_R3_%,After_R4_%
+Round,N,,Boot_correct,Boot_%,R1_correct,R1_%,R2_correct,R2_%,R3_correct,R3_%,R4_correct,R4_%
+R1,20,,5,25%,17,85%,18,90%,18,90%,18,90%
+R2,20,,7,35%,11,55%,15,75%,17,85%,18,90%
+R3,20,,7,35%,13,65%,15,75%,19,95%,19,95%
+R4,20,,7,35%,12,60%,16,80%,13,65%,17,85%
+VAL,10,,3,30%,6,60%,8,80%,8,80%,8,80%
+TOTAL,90,,29,32%,59,66%,72,80%,75,83%,80,89%
