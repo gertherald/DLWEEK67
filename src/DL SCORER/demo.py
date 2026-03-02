@@ -74,13 +74,13 @@ BG_CARD    = "#2a2a3e"
 BG_HEADER  = "#0f0f1a"
 TEXT       = "#e2e8f0"
 TEXT_DIM   = "#94a3b8"
-# Muted button colors — dark enough for white text to remain readable
-GREEN      = "#16a34a"   # darker green  (was #22c55e — too bright)
-YELLOW     = "#b45309"   # dark amber    (was #f59e0b — too bright / unreadable with white)
-RED        = "#b91c1c"   # darker red    (was #ef4444 — too bright)
+GREEN      = "#16a34a"
+YELLOW     = "#b45309"
+RED        = "#b91c1c"
 BORDER     = "#3f3f5a"
-# All buttons now use white text (dark bg throughout)
-YELLOW_TEXT = "white"    # dark amber bg is dark enough for white text
+# macOS native button rendering overrides bg — use black text on all buttons
+BTN_FG     = "black"
+YELLOW_TEXT = "black"
 
 FONT_MAIN  = ("Helvetica", 11)
 FONT_MONO  = ("Courier", 10)
@@ -503,7 +503,7 @@ def _open_shadow_popup(parent, cve_sig: dict, smells: list, expected: str) -> No
         hdr2 = tk.Frame(result_frame, bg=color, padx=12, pady=10)
         hdr2.pack(fill="x")
         tk.Label(hdr2, text=f"{icon}  {title_t}",
-                 font=FONT_TITLE, bg=color, fg="white").pack(anchor="w")
+                 font=FONT_TITLE, bg=color, fg=BTN_FG).pack(anchor="w")
 
         body_card = tk.Frame(result_frame, bg=BG_DARK, padx=16, pady=14)
         body_card.pack(fill="x")
@@ -553,14 +553,13 @@ def _open_decision_popup(root_win, result: dict) -> None:
     risk_int = int(round(risk))
     band_short = "LOW" if "LOW" in band.upper() else ("MED" if "MEDIUM" in band.upper() else "HIGH")
 
-    hdr_fg = YELLOW_TEXT if dec_color == YELLOW else "white"
     left_lbl = tk.Label(hdr, text=f"{icon}  {dec_label}",
-                        font=("Helvetica", 16, "bold"), bg=dec_color, fg=hdr_fg)
+                        font=("Helvetica", 16, "bold"), bg=dec_color, fg=BTN_FG)
     left_lbl.pack(side="left")
     right_lbl = tk.Label(hdr, text=f"Risk: {risk_int}/100   🔴 {band_short}" if band_color == RED
                          else (f"Risk: {risk_int}/100   🟡 {band_short}" if band_color == YELLOW
                                else f"Risk: {risk_int}/100   🟢 {band_short}"),
-                         font=FONT_BOLD, bg=dec_color, fg=hdr_fg)
+                         font=FONT_BOLD, bg=dec_color, fg=BTN_FG)
     right_lbl.pack(side="right", padx=8)
 
     # ── Scrollable body ───────────────────────────────────────────────────────
@@ -586,12 +585,19 @@ def _open_decision_popup(root_win, result: dict) -> None:
     conf_val = probs.get(conf_dec, 0.0)
     def_prob = result["_defect_result"].get("defect_probability", 0.0)
 
-    pairs = [
-        ("CVE Severity:", cve_sev),
-        ("Confidence:", f"{_decision_label(conf_dec)} {conf_val:.0%}"),
-        ("Defect Prob:", f"{def_prob:.2f}"),
-        ("DL Model:", _MODEL_LABEL),
-    ]
+    if decision == "APPROVE":
+        pairs = [
+            ("Confidence:", f"{_decision_label(conf_dec)} {conf_val:.0%}"),
+            ("Defect Prob:", f"{def_prob:.2f}"),
+            ("DL Model:", _MODEL_LABEL),
+        ]
+    else:
+        pairs = [
+            ("CVE Severity:", cve_sev),
+            ("Confidence:", f"{_decision_label(conf_dec)} {conf_val:.0%}"),
+            ("Defect Prob:", f"{def_prob:.2f}"),
+            ("DL Model:", _MODEL_LABEL),
+        ]
     for i, (lbl, val) in enumerate(pairs):
         col = tk.Frame(meta, bg=BG_CARD)
         col.grid(row=0, column=i, padx=16, sticky="w")
@@ -609,7 +615,6 @@ def _open_decision_popup(root_win, result: dict) -> None:
         tk.Label(safe_card, text="✅  No security violations detected.",
                  font=FONT_BOLD, bg=BG_DARK, fg=GREEN, anchor="w").pack(fill="x", pady=(0, 8))
         for lbl, val in [
-            ("CVE Severity:", cve_sev),
             ("Decision Confidence:", f"{_decision_label(conf_dec)} — {conf_val:.0%}"),
             ("Defect Probability:", f"{def_prob:.2f}  (threshold 0.30)"),
         ]:
@@ -645,24 +650,6 @@ def _open_decision_popup(root_win, result: dict) -> None:
         tk.Label(vf, text="No CWE violations flagged.", font=FONT_SM,
                  bg=BG_CARD, fg=TEXT_DIM).pack(anchor="w")
 
-    # ── Top Risk Factors ──────────────────────────────────────────────────────
-    if factors:
-        ff = _section("── Top Risk Factors ──")
-        for i, f in enumerate(factors[:5], 1):
-            fname = f.get("feature", "")
-            fval  = f.get("value", "")
-            fdir  = f.get("direction", "")
-            arrow = "↑ increases risk" if fdir == "up" else "↓ decreases risk"
-            color = RED if fdir == "up" else GREEN
-            row = tk.Frame(ff, bg=BG_CARD)
-            row.pack(fill="x", pady=2)
-            tk.Label(row, text=f"{i}. {fname}", font=FONT_SM, bg=BG_CARD,
-                     fg=TEXT, width=32, anchor="w").pack(side="left")
-            tk.Label(row, text=f"= {fval}", font=FONT_MONO, bg=BG_CARD,
-                     fg=TEXT_DIM, width=10, anchor="w").pack(side="left")
-            tk.Label(row, text=arrow, font=FONT_SM, bg=BG_CARD,
-                     fg=color).pack(side="left")
-
     # ── Action section ────────────────────────────────────────────────────────
     af = _section("── Action Required ──")
 
@@ -678,9 +665,9 @@ def _open_decision_popup(root_win, result: dict) -> None:
                  bg=BG_CARD, fg=GREEN).pack(anchor="w", pady=4)
         btn_row = tk.Frame(af, bg=BG_CARD)
         btn_row.pack(anchor="w", pady=8)
-        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=TEXT,
+        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
-        tk.Button(btn_row, text="Continue", font=FONT_BOLD, bg=GREEN, fg="white",
+        tk.Button(btn_row, text="Continue", font=FONT_BOLD, bg=GREEN, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_continue).pack(side="left")
 
     elif decision in ("FLAG_FOR_REVIEW", "FLAG"):
@@ -689,9 +676,9 @@ def _open_decision_popup(root_win, result: dict) -> None:
                  justify="left").pack(anchor="w", pady=4)
         btn_row = tk.Frame(af, bg=BG_CARD)
         btn_row.pack(anchor="w", pady=8)
-        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=TEXT,
+        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
-        tk.Button(btn_row, text="Continue with Warning", font=FONT_BOLD, bg=YELLOW, fg=YELLOW_TEXT,
+        tk.Button(btn_row, text="Continue with Warning", font=FONT_BOLD, bg=YELLOW, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_continue).pack(side="left")
 
     else:  # BLOCK
@@ -706,20 +693,25 @@ def _open_decision_popup(root_win, result: dict) -> None:
         entry.pack(anchor="w", pady=4)
 
         override_btn = tk.Button(af, text="Override & Continue", font=FONT_BOLD,
-                                 bg=BORDER, fg=TEXT_DIM, relief="flat",
+                                 bg=BORDER, fg=BTN_FG, relief="flat",
                                  padx=16, pady=8, state="disabled", command=_continue)
 
         def _check_confirm(*_):
             if entry_var.get() == "CONFIRM":
-                override_btn.config(state="normal", bg=RED, fg="white")
+                override_btn.config(state="normal", bg=RED, fg=BTN_FG)
             else:
-                override_btn.config(state="disabled", bg=BORDER, fg=TEXT_DIM)
+                override_btn.config(state="disabled", bg=BORDER, fg=BTN_FG)
+
+        def _on_enter(evt):
+            if entry_var.get() == "CONFIRM":
+                _continue()
 
         entry_var.trace_add("write", _check_confirm)
+        entry.bind("<Return>", _on_enter)
 
         btn_row = tk.Frame(af, bg=BG_CARD)
         btn_row.pack(anchor="w", pady=8)
-        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=TEXT,
+        tk.Button(btn_row, text="Abort Commit", font=FONT_BOLD, bg=BORDER, fg=BTN_FG,
                   relief="flat", padx=16, pady=8, command=_abort).pack(side="left", padx=(0, 12))
         override_btn.pack(in_=btn_row, side="left")
 
@@ -834,13 +826,13 @@ def _build_main_window() -> tk.Tk:
         root.after(120, _poll_result)
 
     DEMO_BTNS = [
-        ("✅  Run APPROVE Demo", "APPROVE", GREEN,  "white"),
-        ("⚠   Run FLAG Demo",   "FLAG",    YELLOW, YELLOW_TEXT),
-        ("❌  Run BLOCK Demo",  "BLOCK",   RED,    "white"),
+        ("✅  Run APPROVE Demo", "APPROVE", GREEN),
+        ("⚠   Run FLAG Demo",   "FLAG",    YELLOW),
+        ("❌  Run BLOCK Demo",  "BLOCK",   RED),
     ]
-    for label, key, color, fgcol in DEMO_BTNS:
+    for label, key, color in DEMO_BTNS:
         b = tk.Button(btns_frame, text=label, font=FONT_BOLD,
-                      bg=color, fg=fgcol, relief="flat",
+                      bg=color, fg=BTN_FG, relief="flat",
                       padx=18, pady=10,
                       command=lambda k=key: _run_demo(k))
         b.pack(side="left", padx=(0, 12))
