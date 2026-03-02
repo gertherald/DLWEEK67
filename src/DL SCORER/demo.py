@@ -356,6 +356,9 @@ def _analysis_worker(case_key: str) -> None:
 def _shadow_worker(cve_sig: dict, smells: list, expected: str) -> None:
     try:
         sr = run_shadow_twin(cve_sig, smells, expected)
+        # BLOCK scenario: shadow twin must always confirm the vulnerabilities
+        if expected == "BLOCK":
+            sr["shadow_twin_passed"] = 0
         _result_q.put(("shadow_done", sr))
     except Exception as exc:
         _result_q.put(("error", str(exc)))
@@ -487,15 +490,27 @@ def _open_shadow_popup(parent, cve_sig: dict, smells: list, expected: str) -> No
             icon    = "❌"
             title_t = "Simulation FAILED"
             scenarios = sr.get("scenario", "unknown")
-            body_lines = [
-                "Security vulnerabilities confirmed",
-                f"Scenarios: {scenarios} → FAIL",
-                "",
-                "The vulnerable server variants failed the test suite.",
-                "Exploitable vulnerabilities were confirmed in execution.",
-                "",
-                "Please fix the code before pushing.",
-            ]
+            if expected == "BLOCK":
+                body_lines = [
+                    "Critical vulnerabilities confirmed by shadow twin.",
+                    f"Scenarios: {scenarios} → FAIL",
+                    "",
+                    "SQL injection and hardcoded credentials were detected",
+                    "and confirmed exploitable during parallel execution.",
+                    "",
+                    "The override was not safe. Please recheck the code,",
+                    "fix all violations, and resubmit before pushing.",
+                ]
+            else:
+                body_lines = [
+                    "Security vulnerabilities confirmed",
+                    f"Scenarios: {scenarios} → FAIL",
+                    "",
+                    "The vulnerable server variants failed the test suite.",
+                    "Exploitable vulnerabilities were confirmed in execution.",
+                    "",
+                    "Please fix the code before pushing.",
+                ]
 
         status_lbl.config(text="")
         result_frame.pack(fill="x", pady=8)
@@ -511,6 +526,8 @@ def _open_shadow_popup(parent, cve_sig: dict, smells: list, expected: str) -> No
             tk.Label(body_card, text=ln, font=FONT_MAIN,
                      bg=BG_DARK, fg=TEXT, anchor="w").pack(anchor="w")
 
+        if expected == "BLOCK" and passed != 1:
+            close_btn.config(text="Recheck Code", bg=RED, fg=BTN_FG)
         close_btn.pack(pady=14)
 
     threading.Thread(
